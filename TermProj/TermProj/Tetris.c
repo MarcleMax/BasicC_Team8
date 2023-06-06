@@ -5,8 +5,16 @@
 #include<time.h>
 #include<stdlib.h>
 
+#define RESET_COLOR "\x1B[0m"
+#define RED_COLOR "\x1B[31m"
+#define GREEN_COLOR "\x1B[32m"
+#define YELLOW_COLOR "\x1B[33m"
+#define BLUE_COLOR "\x1B[34m"
+#define MAGENTA_COLOR "\x1B[35m"
+#define CYAN_COLOR "\x1B[36m"
+
 #define MAX_OPTIONS 3
-#define MAX_OPTIONS2 2
+//#define MAX_OPTIONS2 2
 
 #define LEFT 75 //좌로 이동    //키보드값들 
 #define RIGHT 77 //우로 이동 
@@ -33,7 +41,7 @@
 
 #define STATUS_X_ADJ MAIN_X_ADJ+MAIN_X+1 //게임정보표시 위치조정 
 
-int STATUS_Y_GOAL; //GOAL 정보표시위치Y 좌표 저장 
+//int STATUS_Y_GOAL; //GOAL 정보표시위치Y 좌표 저장 
 int STATUS_Y_LEVEL; //LEVEL 정보표시위치Y 좌표 저장
 int STATUS_Y_SCORE; //SCORE 정보표시위치Y 좌표 저장
 
@@ -77,7 +85,8 @@ int speed; //게임진행속도
 int level; //현재 level 
 int level_goal; //다음레벨로 넘어가기 위한 목표점수 
 int cnt; //현재 레벨에서 제거한 줄 수를 저장 
-int score; //현재 점수 
+int point; //현재 점수 
+int score;
 int last_score = 0; //마지막게임점수 
 int best_score = 0; //최고게임점수 
 
@@ -85,9 +94,15 @@ int new_block_on = 0; //새로운 블럭이 필요함을 알리는 flag
 int crush_on = 0; //현재 이동중인 블록이 충돌상태인지 알려주는 flag 
 int level_up_on = 0; //다음레벨로 진행(현재 레벨목표가 완료되었음을) 알리는 flag 
 int space_key_on = 0; //hard drop상태임을 알려주는 flag 
+char playername[50];
+//int gametype;
 
 void title(); //遊戲開始畫面->GAME START/ INSTRUCTION/ RANKING
-void title2(); //遊戲模式選擇畫面->GENERAL/TIME mode
+//void title2(); //遊戲模式選擇畫面->GENERAL/TIME mode
+void title3(); //Instruction Intorduction
+void title4(); //General Introduction
+void game(); //PLAYING
+void exchange(int); //check exchange status
 void reset(void); //遊戲版初始化
 void reset_main(void); //메인 게임판(main_org[][]를 초기화)
 void reset_main_cpy(void); //copy 게임판(main_cpy[][]를 초기화)
@@ -175,7 +190,8 @@ void title() {
     while (1) {
         system("cls"); // 清除畫面
 
-        gotoxy(x+10, y - 10); printf("%s", "MAIN MENU");
+        gotoxy(x+12, y - 11); printf("T E T R I S");
+        gotoxy(x+10, y - 8); printf("%s", "M A I N    M E N U");
         gotoxy(x, y - 5); printf("%s", "Choose the option and press ENTER to continue...");
         gotoxy(x, y + 0); printf(options[0]); 
         gotoxy(x, y + 4); printf(options[1]); 
@@ -213,17 +229,17 @@ void title() {
     }
 
     if (selectedOption == 0) { //GAME START
-        title2();
+        title4();
     }
     else if (selectedOption == 1) { //INSTRUCTION
-
+        title3();
     }
     else if (selectedOption == 2) { //RANKING
 
     }
 
 }
-
+/*
 void title2() {
     int x = 15; //타이틀화면이 표시되는 x좌표 
     int y = 12; //타이틀화면이 표시되는 y좌표 
@@ -239,7 +255,7 @@ void title2() {
     while (1) {
         system("cls"); // 清除畫面
         gotoxy(x, y - 5); printf("%s", "Choose the option and press ENTER to continue...");
-        gotoxy(x, y - 3); printf("%s", "BACKSPACE to MAIN MENU...");
+        gotoxy(x-12, y - 8); printf("%s", "← BACK");
         gotoxy(x, y + 1); printf(options[0]);
         gotoxy(x, y + 5); printf(options[1]);
         // 顯示選單
@@ -279,28 +295,180 @@ void title2() {
         title();
     }
     else if (selectedOption == 0) { //GENERAL Mode
-        reset(); //遊戲盤復位
-        while (1) {
-            int i;
-            for (i = 0; i < 5; i++) { //塊隔開一格時可輸入5次密鑰
-                check_key(); //確認按鍵輸入
-                draw_main(); //畫面上
-                Sleep(speed); //遊戲速度調整
-                if (crush_on && check_crush(bx, by + 1, b_rotation) == false) Sleep(100);
-                //塊發生碰撞時，需要額外移動或旋轉的時間
-                if (space_key_on == 1) { //執行hard drop時，無法追加移動或旋轉
-                    space_key_on = 0;
-                    break;
-                }
-            }
-            drop_block(); // 降低一個區塊
-            check_level_up(); // 檢查升級
-            check_game_over(); //遊戲結束
-            if (new_block_on == 1) new_block(); // 新塊flag存在時生成新塊
-        }
+        gametype = 0;
+        title4();
     }
     else if (selectedOption == 1) { //TIME Mode
+        //title5();
+    }
+}
+*/
+void title3() {
+    int x = 15; //타이틀화면이 표시되는 x좌표 
+    int y = 12; //타이틀화면이 표시되는 y좌표           
 
+    int selectedOption = 0;
+    int keyPressed;
+
+    while (1) {
+        system("cls"); // 清除畫面
+
+        gotoxy(x+9, y - 10); printf("%s", "I N S T R U C T I O N");
+        gotoxy(x-12, y - 8); printf("%s", "← BACK");
+ 
+        // 顯示選單                        
+        //gotoxy(x+6, y); printf("-FIRST PLAYER-");
+        gotoxy(x+7, y -2); printf("  ↑   : Shift -> rotate the block");
+        gotoxy(x+7, y -1); printf("←  → : Left / Right -> moving the block");
+        gotoxy(x+7, y ); printf("  ↓   : Soft Drop");
+        gotoxy(x+7, y + 1); printf(" SPACE : Hard Drop");        
+
+        gotoxy(x + 7, y + 2); printf("   P   : Pause");
+        gotoxy(x + 7, y + 3); printf("  ESC  : Quit");
+        gotoxy(x + 5, y + 4); printf(" BackSpace : Previous page");
+        
+        //gotoxy(x+20, y); printf("-SECOND PLAYER-");
+        //gotoxy(x+18, y + 2); printf("  w    : Shift");
+        //gotoxy(x+18, y + 3); printf("a  d   : Left / Right");
+        //gotoxy(x + 18, y + 4); printf("  s    : Soft Drop");
+        //gotoxy(x + 18, y + 5); printf(" t  : Hard Drop");
+
+        //gotoxy(x + 9, y + 8); printf("   P    : Pause");
+        //gotoxy(x + 9, y + 9); printf("  ESC   : Quit");
+        //gotoxy(x + 7, y + 10); printf("  BackSpace : Previous page");
+        // 讀取按鍵
+        keyPressed = _getch();
+
+        if (keyPressed == 8) {
+            selectedOption = -1;
+            break;
+        }
+    }
+
+    if (selectedOption == -1) { //GAME START
+        title();
+    }
+
+}
+
+void title4() { //General Introduction
+    int x = 17; //타이틀화면이 표시되는 x좌표 
+    int y = 6; //타이틀화면이 표시되는 y좌표           
+
+    int selectedOption = 0;
+    int keyPressed;
+
+    while (1) {
+        system("cls"); // 清除畫面
+
+        gotoxy(x+ 4, y - 4); printf("%s", "G E N E R A L    M O D E    R U L E");
+        gotoxy(x - 14, y-2); printf("%s", "← BACK");
+
+        // 顯示選單                        
+        gotoxy(x, y); printf("BONUS:");
+        gotoxy(x + 2, y + 1); printf("HARD DROP");
+        gotoxy(x + 2, y + 2); printf("COMBO");
+        gotoxy(x + 2, y + 3); printf("CHAIN ELIMINATION");
+        gotoxy(x, y + 5); printf("MINUS:");
+        gotoxy(x + 2, y + 6); printf("Every step(up, left, right) cost 1 point.");
+        gotoxy(x, y + 8); printf("EXCHANGE: press the key in ( ) to do related action");        
+        gotoxy(x + 2, y + 9); printf("(Shift) Pass the current block: 100 point.");
+        gotoxy(x + 2, y + 10); printf("  (num) Change a specific block: 500 point.");        
+        gotoxy(x + 2, y + 11); printf("    (z) Bomb a whole line: 750 point.");
+        gotoxy(x + 2, y + 12); printf("    (x) Lower the speed to last level: 1000 point.");
+        gotoxy(x , y + 16); printf("Input Playername:");            
+        keyPressed = _getch();
+
+        if (keyPressed == 8) {
+            title();
+            break;
+        }
+        else if (keyPressed == 13) { // Enter鍵  
+            selectedOption == 1;
+            break; // 選擇完成，跳出迴圈
+        }
+        scanf("%s", playername);
+        gotoxy(x+14, y + 14); printf("□□□□□□□□□□□□"); Sleep(100);
+        gotoxy(x+14, y + 15); printf("□                    □"); Sleep(100);
+        gotoxy(x+14, y + 16); printf("□   ENTER TO START   □"); Sleep(100);
+        gotoxy(x+14, y + 17); printf("□                    □"); Sleep(100);
+        gotoxy(x+14, y + 18); printf("□□□□□□□□□□□□"); Sleep(100);
+
+        // 讀取按鍵
+        keyPressed = _getch();
+
+        if (keyPressed == 8) {
+            title();
+            break;
+        }
+        else if (keyPressed == 13) { // Enter鍵  
+            game();            
+            break; // 選擇完成，跳出迴圈
+        }
+    }    
+}
+
+void exchange(point) {
+    if ((point >= 100) & (point <=120)) {
+        gotoxy(STATUS_X_ADJ, 19); printf(YELLOW_COLOR "●" RESET_COLOR " (Shift) Shift Next");
+    }
+    else if (point > 120){
+        gotoxy(STATUS_X_ADJ, 19); printf(GREEN_COLOR "●" RESET_COLOR " (Shift) Shift Next");
+    }
+    else {
+        gotoxy(STATUS_X_ADJ, 19); printf(RED_COLOR "●" RESET_COLOR " (Shift) Shift Next");
+    }
+
+    if ((point >= 500) & (point <= 520)) {
+        gotoxy(STATUS_X_ADJ, 20); printf(YELLOW_COLOR "●" RESET_COLOR "   (num) Change Block");
+    }
+    else if (point > 520) {
+        gotoxy(STATUS_X_ADJ, 20); printf(GREEN_COLOR "●" RESET_COLOR "   (num) Change Block");
+    }
+    else {
+        gotoxy(STATUS_X_ADJ, 20); printf(RED_COLOR "●" RESET_COLOR "   (num) Change Block");
+    }
+
+    if ((point >= 750)& (point <= 770)) {
+        gotoxy(STATUS_X_ADJ, 21); printf(YELLOW_COLOR "●" RESET_COLOR "     (z) Bomb");
+    }
+    else if (point > 770) {
+        gotoxy(STATUS_X_ADJ, 21); printf(GREEN_COLOR "●" RESET_COLOR "     (z) Bomb");
+    }
+    else {
+        gotoxy(STATUS_X_ADJ, 21); printf(RED_COLOR "●" RESET_COLOR "     (z) Bomb");
+    }
+
+    if ((point >= 1000) & (point <= 1020)) {
+        gotoxy(STATUS_X_ADJ, 22); printf(YELLOW_COLOR "●" RESET_COLOR "     (x) Lower Speed");
+    }
+    else if (point >= 1000) {
+        gotoxy(STATUS_X_ADJ, 22); printf(GREEN_COLOR "●" RESET_COLOR "     (x) Lower Speed");
+    }
+    else {
+        gotoxy(STATUS_X_ADJ, 22); printf(RED_COLOR "●" RESET_COLOR "     (x) Lower Speed");
+    }
+}
+
+void game(void) {
+    reset(); //遊戲盤復位
+    while (1) {
+        int i;
+        for (i = 0; i < 5; i++) { //塊隔開一格時可輸入5次密鑰
+            check_key(); //確認按鍵輸入
+            draw_main(); //畫面上
+            Sleep(speed); //遊戲速度調整
+            if (crush_on && check_crush(bx, by + 1, b_rotation) == false) Sleep(100);
+            //塊發生碰撞時，需要額外移動或旋轉的時間
+            if (space_key_on == 1) { //執行hard drop時，無法追加移動或旋轉
+                space_key_on = 0;
+                break;
+            }
+        }
+        drop_block(); // 降低一個區塊
+        check_level_up(); // 檢查升級
+        check_game_over(); //遊戲結束
+        if (new_block_on == 1) new_block(); // 新塊flag存在時生成新塊
     }
 }
 
@@ -315,6 +483,7 @@ void reset(void) {
 
     level = 1; //각종변수 초기화 
     score = 0;
+    point = 100;
     level_goal = 1000;
     key = 0;
     crush_on = 0;
@@ -366,23 +535,39 @@ void draw_map(void) { //게임 상태 표시를 나타내는 함수
     int y = 3;             // level, goal, score만 게임중에 값이 바뀔수 도 있음 그 y값을 따로 저장해둠 
                          // 그래서 혹시 게임 상태 표시 위치가 바뀌어도 그 함수에서 안바꿔도 되게.. 
     gotoxy(STATUS_X_ADJ, STATUS_Y_LEVEL = y); printf(" LEVEL : %5d", level);
-    gotoxy(STATUS_X_ADJ, STATUS_Y_GOAL = y + 1); printf(" GOAL  : %5d", 10 - cnt);
+    //gotoxy(STATUS_X_ADJ, STATUS_Y_GOAL = y + 1); printf(" GOAL  : %5d", 10 - cnt);
     gotoxy(STATUS_X_ADJ, y + 2); printf("+-  N E X T  -+ ");
     gotoxy(STATUS_X_ADJ, y + 3); printf("|             | ");
     gotoxy(STATUS_X_ADJ, y + 4); printf("|             | ");
     gotoxy(STATUS_X_ADJ, y + 5); printf("|             | ");
     gotoxy(STATUS_X_ADJ, y + 6); printf("|             | ");
     gotoxy(STATUS_X_ADJ, y + 7); printf("+-- -  -  - --+ ");
-    gotoxy(STATUS_X_ADJ, y + 8); printf(" YOUR SCORE :");
-    gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE = y + 9); printf("        %6d", score);
-    gotoxy(STATUS_X_ADJ, y + 10); printf(" LAST SCORE :");
-    gotoxy(STATUS_X_ADJ, y + 11); printf("        %6d", last_score);
-    gotoxy(STATUS_X_ADJ, y + 12); printf(" BEST SCORE :");
-    gotoxy(STATUS_X_ADJ, y + 13); printf("        %6d", best_score);
-    gotoxy(STATUS_X_ADJ, y + 15); printf("  △   : Shift        SPACE : Hard Drop");
-    gotoxy(STATUS_X_ADJ, y + 16); printf("◁  ▷ : Left / Right   P   : Pause");
-    gotoxy(STATUS_X_ADJ, y + 17); printf("  ▽   : Soft Drop     ESC  : Quit");
-    gotoxy(STATUS_X_ADJ, y + 20); printf("blog.naver.com/azure0777");
+    gotoxy(STATUS_X_ADJ, y + 9); printf(" YOUR POINT :");
+    gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE = y + 10); printf("        %6d", point);
+    //gotoxy(STATUS_X_ADJ, y + 11); printf(" LAST SCORE :");
+    //gotoxy(STATUS_X_ADJ, y + 12); printf("        %6d", last_score);
+    //gotoxy(STATUS_X_ADJ, y + 13); printf(" BEST SCORE :");
+    //gotoxy(STATUS_X_ADJ, y + 14); printf("        %6d", best_score);        
+
+    gotoxy(STATUS_X_ADJ, y + 16); printf(RED_COLOR "●" RESET_COLOR " (Shift) Shift Next");
+    gotoxy(STATUS_X_ADJ, y + 17); printf(RED_COLOR "●" RESET_COLOR "   (num) Change Block");
+    gotoxy(STATUS_X_ADJ, y + 18); printf(RED_COLOR "●" RESET_COLOR "     (z) Bomb");
+    gotoxy(STATUS_X_ADJ, y + 19); printf(RED_COLOR "●" RESET_COLOR "     (x) Lower Speed");
+    //gotoxy(STATUS_X_ADJ + 10, y + 9); printf(RED_COLOR "●" RESET_COLOR " (z) Shift Next");        
+    //gotoxy(STATUS_X_ADJ + 10, y + 11); printf(RED_COLOR "●" RESET_COLOR " (x) Change Block");    
+    //gotoxy(STATUS_X_ADJ + 10, y + 13); printf(RED_COLOR "●" RESET_COLOR " (c) Bomb");    
+    //gotoxy(STATUS_X_ADJ + 10, y + 15); printf(RED_COLOR "●" RESET_COLOR " (v) Lower Speed"); 
+
+    for (int t = 0; t < 7; t++) {        
+        for (int i = 1; i < 3; i++) { //在遊戲狀態顯示時繪製下一個塊
+            for (int j = 0; j < 4; j++) {
+                if (blocks[t][0][i][j] == 1) {
+                    gotoxy(STATUS_X_ADJ + 15, 4 * (t+1) -2); printf("%d.",t+1);
+                    gotoxy(STATUS_X_ADJ + j + 17, i + 4*t); printf("\u25A1");
+                }
+            }
+        }
+    }    
 }
 
 void draw_main(void) { //게임판 그리는 함수 
@@ -401,10 +586,10 @@ void draw_main(void) { //게임판 그리는 함수
                     printf("  ");
                     break;
                 case CEILLING: //천장모양 
-                    printf(". ");
+                    printf(". ");                    
                     break;
                 case WALL: //벽모양 
-                    printf("▩");
+                    printf(CYAN_COLOR"\u25A1" RESET_COLOR);
                     break;
                 case INACTIVE_BLOCK: //굳은 블럭 모양  
                     printf("□");
@@ -482,8 +667,9 @@ void check_key(void) {
                 space_key_on = 1; //스페이스키 flag를 띄움 
                 while (crush_on == 0) { //바닥에 닿을때까지 이동시킴 
                     drop_block();
-                    score += level; // hard drop 보너스
-                    gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE); printf("        %6d", score); //점수 표시  
+                    point += level; // hard drop 보너스
+                    gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE); printf("        %6d", point); //점수 표시                     
+                    exchange(point);                                        
                 }
                 break;
             case P: //P(대문자) 눌렀을때 
@@ -620,7 +806,7 @@ void check_line(void) {
         }
         if (block_amount == MAIN_X - 2) { //블록이 가득 찬 경우 
             if (level_up_on == 0) { //레벨업상태가 아닌 경우에(레벨업이 되면 자동 줄삭제가 있음) 
-                score += 100 * level; //점수추가 
+                point += 100 * level; //점수추가 
                 cnt++; //지운 줄 갯수 카운트 증가 
                 combo++; //콤보수 증가  
             }
@@ -638,12 +824,13 @@ void check_line(void) {
         if (combo > 1) { //2콤보이상인 경우 경우 보너스및 메세지를 게임판에 띄웠다가 지움 
             gotoxy(MAIN_X_ADJ + (MAIN_X / 2) - 1, MAIN_Y_ADJ + by - 2); printf("%d COMBO!", combo);
             Sleep(500);
-            score += (combo * level * 100);
+            point += (combo * level * 100);
             reset_main_cpy(); //텍스트를 지우기 위해 main_cpy을 초기화.
 //(main_cpy와 main_org가 전부 다르므로 다음번 draw()호출시 게임판 전체를 새로 그리게 됨) 
         }
-        gotoxy(STATUS_X_ADJ, STATUS_Y_GOAL); printf(" GOAL  : %5d", (cnt <= 10) ? 10 - cnt : 0);
-        gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE); printf("        %6d", score);
+        //gotoxy(STATUS_X_ADJ, STATUS_Y_GOAL); printf(" GOAL  : %5d", (cnt <= 10) ? 10 - cnt : 0);
+        gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE); printf("        %6d", point);        
+        exchange(point);      
     }
 }
 
@@ -715,7 +902,7 @@ void check_level_up(void) {
         level_up_on = 0; //레벨업 flag꺼줌
 
         gotoxy(STATUS_X_ADJ, STATUS_Y_LEVEL); printf(" LEVEL : %5d", level); //레벨표시 
-        gotoxy(STATUS_X_ADJ, STATUS_Y_GOAL); printf(" GOAL  : %5d", 10 - cnt); // 레벨목표 표시 
+        //gotoxy(STATUS_X_ADJ, STATUS_Y_GOAL); printf(" GOAL  : %5d", 10 - cnt); // 레벨목표 표시 
 
     }
 }
@@ -723,22 +910,23 @@ void check_level_up(void) {
 void check_game_over(void) {
     int i;
 
-    int x = 5;
-    int y = 5;
+    int x = 20;
+    int y = 10;
 
     for (i = 1; i < MAIN_X - 2; i++) {
         if (main_org[3][i] > 0) { //천장(위에서 세번째 줄)에 inactive가 생성되면 게임 오버 
-            gotoxy(x, y + 0); printf("▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤"); //게임오버 메세지 
-            gotoxy(x, y + 1); printf("▤                              ▤");
-            gotoxy(x, y + 2); printf("▤  +-----------------------+   ▤");
-            gotoxy(x, y + 3); printf("▤  |  G A M E  O V E R..   |   ▤");
-            gotoxy(x, y + 4); printf("▤  +-----------------------+   ▤");
-            gotoxy(x, y + 5); printf("▤   YOUR SCORE: %6d         ▤", score);
-            gotoxy(x, y + 6); printf("▤                              ▤");
-            gotoxy(x, y + 7); printf("▤  Press any key to restart..  ▤");
-            gotoxy(x, y + 8); printf("▤                              ▤");
-            gotoxy(x, y + 9); printf("▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤");
-            last_score = score; //게임점수를 옮김 
+            score = level * 10000 + point;
+            gotoxy(x, y + 0); printf(YELLOW_COLOR"#################################"RESET_COLOR); //게임오버 메세지 
+            gotoxy(x, y + 1); printf(YELLOW_COLOR"##                             ##"RESET_COLOR);
+            gotoxy(x, y + 2); printf(YELLOW_COLOR"##  +-----------------------+  ##"RESET_COLOR);
+            gotoxy(x, y + 3); printf(YELLOW_COLOR"##  |   G A M E  O V E R..  |  ##"RESET_COLOR);
+            gotoxy(x, y + 4); printf(YELLOW_COLOR"##  +-----------------------+  ##"RESET_COLOR);
+            gotoxy(x, y + 5); printf(YELLOW_COLOR"##      YOUR SCORE: %6d     ##"RESET_COLOR, score);
+            gotoxy(x, y + 6); printf(YELLOW_COLOR"##                             ##"RESET_COLOR);
+            gotoxy(x, y + 7); printf(YELLOW_COLOR"##  Press any key to restart.. ##"RESET_COLOR);
+            gotoxy(x, y + 8); printf(YELLOW_COLOR"##                             ##"RESET_COLOR);
+            gotoxy(x, y + 9); printf(YELLOW_COLOR"#################################"RESET_COLOR);
+            //last_score = score; //게임점수를 옮김             
 
             if (score > best_score) { //최고기록 갱신시 
                 FILE* file = fopen("score.dat", "wt"); //score.dat에 점수 저장                
@@ -765,18 +953,18 @@ void check_game_over(void) {
 void pause(void) { //게임 일시정지 함수 
     int i, j;
 
-    int x = 5;
-    int y = 5;
+    int x = 20;
+    int y = 10;
 
     for (i = 1; i < MAIN_X - 2; i++) { //게임 일시정지 메세지 
-        gotoxy(x, y + 0); printf("▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤");
-        gotoxy(x, y + 1); printf("▤                              ▤");
-        gotoxy(x, y + 2); printf("▤  +-----------------------+   ▤");
-        gotoxy(x, y + 3); printf("▤  |       P A U S E       |   ▤");
-        gotoxy(x, y + 4); printf("▤  +-----------------------+   ▤");
-        gotoxy(x, y + 5); printf("▤  Press any key to resume..   ▤");
-        gotoxy(x, y + 6); printf("▤                              ▤");
-        gotoxy(x, y + 7); printf("▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤▤");
+        gotoxy(x, y + 0); printf(MAGENTA_COLOR"################################"RESET_COLOR);
+        gotoxy(x, y + 1); printf(MAGENTA_COLOR"##                            ##"RESET_COLOR);
+        gotoxy(x, y + 2); printf(MAGENTA_COLOR"## +-----------------------+  ##"RESET_COLOR);
+        gotoxy(x, y + 3); printf(MAGENTA_COLOR"## |       P A U S E       |  ##"RESET_COLOR);
+        gotoxy(x, y + 4); printf(MAGENTA_COLOR"## +-----------------------+  ##"RESET_COLOR);
+        gotoxy(x, y + 5); printf(MAGENTA_COLOR"## Press any key to continue  ##"RESET_COLOR);
+        gotoxy(x, y + 6); printf(MAGENTA_COLOR"##                            ##"RESET_COLOR);
+        gotoxy(x, y + 7); printf(MAGENTA_COLOR"################################"RESET_COLOR);
     }
     _getch(); //키입력시까지 대기 
 

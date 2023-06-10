@@ -23,7 +23,8 @@
 #define SPACE 32 //hard drop
 #define p 112 //일시정지 
 #define P 80 //일시정지
-#define ESC 27 //게임종료 
+#define ESC 27 //게임종료
+
 
 #define false 0
 #define true 1
@@ -44,6 +45,7 @@
 //int STATUS_Y_GOAL; //GOAL 정보표시위치Y 좌표 저장 
 int STATUS_Y_LEVEL; //LEVEL 정보표시위치Y 좌표 저장
 int STATUS_Y_SCORE; //SCORE 정보표시위치Y 좌표 저장
+
 
 int blocks[7][4][4][4] = {
 {{0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0},{0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0},
@@ -95,6 +97,11 @@ int crush_on = 0; //현재 이동중인 블록이 충돌상태인지 알려주�
 int level_up_on = 0; //다음레벨로 진행(현재 레벨목표가 완료되었음을) 알리는 flag 
 int space_key_on = 0; //hard drop상태임을 알려주는 flag 
 char playername[50];
+int options;
+
+int tmp = 0;
+
+
 //int gametype;
 
 void title(); //遊戲開始畫面->GAME START/ INSTRUCTION/ RANKING
@@ -114,9 +121,15 @@ void drop_block(void); //블록을 아래로 떨어트림
 int check_crush(int bx, int by, int rotation); //bx, by위치에 rotation회전값을 같는 경우 충돌 판단 
 void move_block(int dir); //dir방향으로 블록을 움직임 
 void check_line(void); //줄이 가득찼는지를 판단하고 지움 
-void check_level_up(void); //레벨목표가 달성되었는지를 판단하고 levelup시킴 
+void check_level_up(); //레벨목표가 달성되었는지를 판단하고 levelup시킴 
 void check_game_over(void); //게임오버인지 판단하고 게임오버를 진행 
-void pause(void);//게임을 일시정지시킴 
+void pause(void);
+void choose_block(options);//to exchange  you want block
+void change_speed();//to lower speed
+void change_next_block(point);//to change next block
+void exchange(point);
+
+
 
 void gotoxy(int x, int y) { //gotoxy함수 
     COORD pos = { 2 * x,y };
@@ -384,7 +397,7 @@ void title4() { //General Introduction
             break;
         }
         else if (keyPressed == 13) { // Enter鍵  
-            selectedOption == 1;
+            selectedOption = 1;
             break; // 選擇完成，跳出迴圈
         }
         scanf("%s", playername);
@@ -450,14 +463,18 @@ void exchange(point) {
     }
 }
 
+
 void game(void) {
     reset(); //遊戲盤復位
     while (1) {
+
         int i;
+
         for (i = 0; i < 5; i++) { //塊隔開一格時可輸入5次密鑰
-            check_key(); //確認按鍵輸入
+            check_key();//確認按鍵輸入
             draw_main(); //畫面上
-            Sleep(speed); //遊戲速度調整
+            Sleep(speed);
+            //遊戲速度調整
             if (crush_on && check_crush(bx, by + 1, b_rotation) == false) Sleep(100);
             //塊發生碰撞時，需要額外移動或旋轉的時間
             if (space_key_on == 1) { //執行hard drop時，無法追加移動或旋轉
@@ -465,12 +482,18 @@ void game(void) {
                 break;
             }
         }
+
+
+
         drop_block(); // 降低一個區塊
         check_level_up(); // 檢查升級
         check_game_over(); //遊戲結束
+
         if (new_block_on == 1) new_block(); // 新塊flag存在時生成新塊
     }
+
 }
+
 
 void reset(void) {
 
@@ -638,8 +661,122 @@ void new_block(void) { //新建塊
     }
 }
 
+void choose_block(options) {
+    int i, j;
+    int change_type;
+
+    if (options >= 49 && options <= 55) {
+        int i, j;
+        for (i = 0; i < 4; i++) { //遊戲版bx,by在位置生成塊
+            for (j = 0; j < 4; j++) {
+                if (blocks[b_type][b_rotation][i][j] == 1)
+
+                    main_org[by + i][bx + j] = EMPTY;
+            }
+        }
+
+        bx = (MAIN_X / 2) - 1; //塊生成位置x做邊(遊戲盤的中間)
+        by = 0;  //塊生成位置y座標(最上)
+        change_type = options - 49;
+        b_type = change_type;
+        //創建下一個塊
+        b_rotation = 0;  //旋轉導入
+
+        new_block_on = 0; //new_block flag를 끔 
+
+        for (i = 0; i < 4; i++) { //遊戲版bx,by在位置生成塊
+            for (j = 0; j < 4; j++) {
+                if (blocks[b_type][b_rotation][i][j] == 1)
+
+                    main_org[by + i][bx + j] = ACTIVE_BLOCK;
+            }
+        }
+
+    }
+
+    gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE); printf("        %6d", point);
+}
+
+void change_next_block(point) {
+
+
+
+
+    if (point >= 100) {
+        for (int i = 0; i < 4; i++) { //遊戲版bx,by在位置生成塊
+            for (int j = 0; j < 4; j++) {
+                if (blocks[b_type][b_rotation][i][j] == 1)
+
+                    main_org[by + i][bx + j] = EMPTY;
+            }
+        }
+        new_block();
+
+
+        point -= 100;
+        gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE); printf("        %6d", point);
+
+    }
+
+
+}
+
+void change_speed() {
+
+
+
+    if (point >= 1000 && level >= 2) {
+
+        tmp++;
+        int speed_level = level - tmp;
+        switch (speed_level) {
+        case 1:
+            speed = 100;
+            break;//레벨별로 속도를 조절해줌. 
+        case 2:
+            speed = 50;
+            break;
+        case 3:
+            speed = 25;
+            break;
+        case 4:
+            speed = 10;
+            break;
+        case 5:
+            speed = 5;
+            break;
+        case 6:
+            speed = 4;
+            break;
+        case 7:
+            speed = 3;
+            break;
+        case 8:
+            speed = 2;
+            break;
+        case 9:
+            speed = 1;
+            break;
+        case 10:
+            speed = 0;
+            break;
+        }
+
+
+        point -= 1000;
+
+
+
+    }
+    gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE); printf("        %6d", point);
+
+}
+
+
+
 void check_key(void) {
     key = 0; //키값 초기화  
+
 
     if (_kbhit()) { //키입력이 있는 경우  
         key = _getch(); //키값을 받음
@@ -663,6 +800,42 @@ void check_key(void) {
         }
         else { //방향키가 아닌경우 
             switch (key) {
+            case 99://use c to change next block
+                change_next_block(point);
+                if (point >= 100) {
+                    point -= 100;
+                    gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE); printf("        %6d", point);
+                    exchange(point);
+                }
+                break;
+
+
+            case 120:  //use x to lower speed
+
+
+                change_speed();
+                exchange(point);
+                break;
+
+
+            case 49:
+            case 50:
+            case 51:
+            case 52:
+            case 53:
+            case 54:
+            case 55:  //use 1-7 to change block
+                options = key;
+                if (point >= 500) {
+                    point -= 500;
+                    choose_block(options);
+                    exchange(point);
+                }
+
+
+
+                break;
+
             case SPACE: //스페이스키 눌렀을때 
                 space_key_on = 1; //스페이스키 flag를 띄움 
                 while (crush_on == 0) { //바닥에 닿을때까지 이동시킴 
@@ -720,7 +893,7 @@ void move_block(int dir) { //블록을 이동시킴
 
     switch (dir) {
     case LEFT: //왼쪽방향 
-        for (i = 0; i < 4; i++) { //현재좌표의 블럭을 지움 
+        for (i = 0; i < 4; i++) { //删除当前坐标块 
             for (j = 0; j < 4; j++) {
                 if (blocks[b_type][b_rotation][i][j] == 1) main_org[by + i][bx + j] = EMPTY;
             }
@@ -796,10 +969,10 @@ void move_block(int dir) { //블록을 이동시킴
 void check_line(void) {
     int i, j, k, l;
 
-    int    block_amount; //한줄의 블록갯수를 저장하는 변수 
+    int    block_amount; //存储一行块数的变量
     int combo = 0; //콤보갯수 저장하는 변수 지정및 초기화 
 
-    for (i = MAIN_Y - 2; i > 3;) { //i=MAIN_Y-2 : 밑쪽벽의 윗칸부터,  i>3 : 천장(3)아래까지 검사 
+    for (i = MAIN_Y - 2; i > 3;) { //i= main_y -2:从墙体的上格开始，i>3:天花板(3)下面检查
         block_amount = 0; //블록갯수 저장 변수 초기화 
         for (j = 1; j < MAIN_X - 1; j++) { //벽과 벽사이의 블록갯루를 셈 
             if (main_org[i][j] > 0) block_amount++;
@@ -834,7 +1007,7 @@ void check_line(void) {
     }
 }
 
-void check_level_up(void) {
+void check_level_up() {
     int i, j;
 
     if (cnt >= 10) { //레벨별로 10줄씩 없애야함. 10줄이상 없앤 경우 
@@ -869,8 +1042,12 @@ void check_level_up(void) {
         }
         Sleep(100); //별찍은거 보여주기 위해 delay 
         check_line(); //블록으로 모두 채운것 지우기
-        //.check_line()함수 내부에서 level up flag가 켜져있는 경우 점수는 없음.         
-        switch (level) { //레벨별로 속도를 조절해줌. 
+        //.check_line()함수 내부에서 level up flag가 켜져있는 경우 점수는 없음.   
+        int  changed_level = level - tmp;
+        switch (changed_level) {
+        case 1:
+            speed = 100;
+            break;//레벨별로 속도를 조절해줌. 
         case 2:
             speed = 50;
             break;
@@ -899,6 +1076,7 @@ void check_level_up(void) {
             speed = 0;
             break;
         }
+
         level_up_on = 0; //레벨업 flag꺼줌
 
         gotoxy(STATUS_X_ADJ, STATUS_Y_LEVEL); printf(" LEVEL : %5d", level); //레벨표시 
@@ -906,6 +1084,7 @@ void check_level_up(void) {
 
     }
 }
+
 
 void check_game_over(void) {
     int i;
@@ -985,4 +1164,4 @@ void pause(void) { //게임 일시정지 함수
             }
         }
     }
-} //끝! 
+}

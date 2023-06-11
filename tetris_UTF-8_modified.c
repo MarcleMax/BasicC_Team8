@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+﻿#define _CRT_SECURE_NO_WARNINGS
 #include<stdio.h>
 #include<windows.h>
 #include<conio.h>
@@ -128,6 +128,7 @@ void choose_block(options);//to exchange  you want block
 void change_speed();//to lower speed
 void change_next_block(point);//to change next block
 void exchange(point);
+//void bomb(void); ///relese a bomb
 
 
 
@@ -800,6 +801,7 @@ void check_key(void) {
         }
         else { //방향키가 아닌경우 
             switch (key) {
+            case 67:    //'C'
             case 99://use c to change next block
                 change_next_block(point);
                 if (point >= 100) {
@@ -810,6 +812,7 @@ void check_key(void) {
                 break;
 
 
+            case 88:    //'X'
             case 120:  //use x to lower speed
 
 
@@ -831,10 +834,18 @@ void check_key(void) {
                     choose_block(options);
                     exchange(point);
                 }
-
-
-
                 break;
+           /* case 90:    ///'Z'
+            case 122:   ///'z'
+                ///[to be added] add a pattern of the bomb, add to the next
+
+                if (point >= 750) { ///?? not sure about the specific point.
+                    point -= 750;
+
+                    bomb(_);    ///fall as others, when touch the last line, bang.
+                    ///[to be added] add the points(according the num of blocks)
+                }*/
+
 
             case SPACE: //스페이스키 눌렀을때 
                 space_key_on = 1; //스페이스키 flag를 띄움 
@@ -977,7 +988,7 @@ void check_line(void) {
         for (j = 1; j < MAIN_X - 1; j++) { //벽과 벽사이의 블록갯루를 셈 
             if (main_org[i][j] > 0) block_amount++;
         }
-        if (block_amount == MAIN_X - 2) { //블록이 가득 찬 경우 
+        if (block_amount == MAIN_X - 2) { //블록이 가득 찬 경우 ///tag
             if (level_up_on == 0) { //레벨업상태가 아닌 경우에(레벨업이 되면 자동 줄삭제가 있음) 
                 point += 100 * level; //점수추가 
                 cnt++; //지운 줄 갯수 카운트 증가 
@@ -1165,3 +1176,7 @@ void pause(void) { //게임 일시정지 함수
         }
     }
 }
+
+//void bomb(void) {   ///release a BOMB to kill a line, when POINTS >== 750??(not sure) and PRESS 'Z'.
+//
+//}

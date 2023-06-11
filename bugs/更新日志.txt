@@ -1,0 +1,3 @@
+1. 增加了对【大写字母】操作的支持。在caps锁定时亦可操作暂停、炸弹等指令。
+2. 将【显示下一方块】从new_block()函数中提出，外置为单独的函数draw_next_block()，方便bomb()调用。
+3. 新增【炸弹】功能。主要由参数bomb_on, bomb_ready()和bomb_clear()组成。

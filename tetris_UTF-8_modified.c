@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+﻿#define _CRT_SECURE_NO_WARNINGS
 #include<stdio.h>
 #include<windows.h>
 #include<conio.h>
@@ -800,6 +800,7 @@ void check_key(void) {
         }
         else { //방향키가 아닌경우 
             switch (key) {
+            case 67:    //'C'
             case 99://use c to change next block
                 change_next_block(point);
                 if (point >= 100) {
@@ -810,6 +811,7 @@ void check_key(void) {
                 break;
 
 
+            case 88:    //'X'
             case 120:  //use x to lower speed
 
 

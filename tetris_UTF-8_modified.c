@@ -4,6 +4,7 @@
 #include<conio.h>
 #include<time.h>
 #include<stdlib.h>
+#include <stdbool.h>        ///for _Bool
 
 #define RESET_COLOR "\x1B[0m"
 #define RED_COLOR "\x1B[31m"
@@ -48,12 +49,12 @@ int STATUS_Y_LEVEL; //LEVEL 정보표시위치Y 좌표 저장
 int STATUS_Y_SCORE; //SCORE 정보표시위치Y 좌표 저장
 
 
-int blocks[7][4][4][4] = {
+int blocks[8][4][4][4] = {
 {{0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0},{0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0},
  {0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0},{0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0}},
-
+ 
 {{0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0},{0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0},
- {0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0},{0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0}},
+{0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0},{0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0}},
 
 {{0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0},{0,0,0,0,0,0,1,0,0,1,1,0,0,1,0,0},
  {0,0,0,0,1,1,0,0,0,1,1,0,0,0,0,0},{0,0,0,0,0,0,1,0,0,1,1,0,0,1,0,0}},
@@ -68,8 +69,10 @@ int blocks[7][4][4][4] = {
  {0,0,0,0,0,0,0,0,1,1,1,0,0,0,1,0},{0,0,0,0,0,1,1,0,0,1,0,0,0,1,0,0}},
 
 {{0,0,0,0,0,1,0,0,1,1,1,0,0,0,0,0},{0,0,0,0,0,1,0,0,0,1,1,0,0,1,0,0},
- {0,0,0,0,0,0,0,0,1,1,1,0,0,1,0,0},{0,0,0,0,0,1,0,0,1,1,0,0,0,1,0,0}}
+ {0,0,0,0,0,0,0,0,1,1,1,0,0,1,0,0},{0,0,0,0,0,1,0,0,1,1,0,0,0,1,0,0}},
 
+ {{0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0},  ///add bomb type
+  {0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0}}
 }; //블록모양 저장 4*4공간에 블록을 표현 blcoks[b_type][b_rotation][i][j]로 사용 
 
 int b_type; //블록 종류를 저장 
@@ -102,6 +105,7 @@ int level_up_on = 0; //다음레벨로 진행(현재 레벨목표가 완료되�
 int space_key_on = 0; //hard drop상태임을 알려주는 flag 
 char playername[50];
 int options;
+_Bool bomb_on = false; //a flag for bomb status
 
 
 int tmp = 0;
@@ -132,10 +136,13 @@ void check_line(void); //줄이 가득찼는지를 판단하고 지움
 void check_level_up(); //레벨목표가 달성되었는지를 판단하고 levelup시킴 
 void check_game_over(void); //게임오버인지 판단하고 게임오버를 진행 
 void pause(void);
-void choose_block(options);//to exchange  you want block
+void choose_block(options);//to exchange you want block
 void change_speed();//to lower speed
 void change_next_block(point);//to change next block
 void exchange(point);
+void draw_next_block(void);     ///draw graph for the next block
+void bomb_ready(void);                ///change the next block to a bomb
+void bomb_clear();              ///clear a line
 
 ScoreEntry Score_3[MAX_SCORES];
 
@@ -563,8 +570,9 @@ void draw_map(void) { //게임 상태 표시를 나타내는 함수
     //gotoxy(STATUS_X_ADJ + 10, y + 13); printf(RED_COLOR "●" RESET_COLOR " (c) Bomb");    
     //gotoxy(STATUS_X_ADJ + 10, y + 15); printf(RED_COLOR "●" RESET_COLOR " (v) Lower Speed"); 
 
+    ///以下循环用于展示待exchange的序号和图例
     for (int t = 0; t < 7; t++) {
-        for (int i = 1; i < 3; i++) { //在遊戲狀態顯示時繪製下一個塊
+        for (int i = 1; i < 3; i++) { //在遊戲狀態顯示時繪製下一個塊 
             for (int j = 0; j < 4; j++) {
                 if (blocks[t][0][i][j] == 1) {
                     gotoxy(STATUS_X_ADJ + 15, 4 * (t + 1) - 2); printf("%d.", t + 1);
@@ -573,6 +581,8 @@ void draw_map(void) { //게임 상태 표시를 나타내는 함수
             }
         }
     }
+    ///tag__add_bomb_graph
+
 }
 
 void draw_main(void) { //게임판 그리는 함수 
@@ -616,8 +626,9 @@ void draw_main(void) { //게임판 그리는 함수
 void new_block(void) { //新建塊
     int i, j;
 
-    bx = (MAIN_X / 2) - 1; //塊生成位置x做邊(遊戲盤的中間)
+    bx = (MAIN_X / 2) - 1; //塊生成位置x座標(遊戲盤的中間)
     by = 0;  //塊生成位置y座標(最上)
+
     b_type = b_type_next; //下一個塊值
     b_type_next = rand() % 7; //創建下一個塊
     b_rotation = 0;  //旋轉導入
@@ -629,18 +640,7 @@ void new_block(void) { //新建塊
             if (blocks[b_type][b_rotation][i][j] == 1) main_org[by + i][bx + j] = ACTIVE_BLOCK;
         }
     }
-    for (i = 1; i < 3; i++) { //在遊戲狀態顯示時繪製下一個塊
-        for (j = 0; j < 4; j++) {
-            if (blocks[b_type_next][0][i][j] == 1) {
-                gotoxy(STATUS_X_ADJ + 2 + j, i + 6);
-                printf("■");
-            }
-            else {
-                gotoxy(STATUS_X_ADJ + 2 + j, i + 6);
-                printf("  ");
-            }
-        }
-    }
+    draw_next_block();
 }
 
 void choose_block(options) {
@@ -653,13 +653,13 @@ void choose_block(options) {
             for (j = 0; j < 4; j++) {
                 if (blocks[b_type][b_rotation][i][j] == 1)
 
-                    main_org[by + i][bx + j] = EMPTY;
+                    main_org[by + i][bx + j] = EMPTY;           ///: bx by,移动中的坐标
             }
         }
 
-        bx = (MAIN_X / 2) - 1; //塊生成位置x做邊(遊戲盤的中間)
+        bx = (MAIN_X / 2) - 1; //塊生成位置x座標(遊戲盤的中間)
         by = 0;  //塊生成位置y座標(最上)
-        change_type = options - 49;
+        change_type = options - 49;         ///: opotions = key
         b_type = change_type;
         //創建下一個塊
         b_rotation = 0;  //旋轉導入
@@ -777,6 +777,7 @@ void check_key(void) {
         }
         else { //방향키가 아닌경우 
             switch (key) {
+            case 67:    //'C'
             case 99://use c to change next block
                 change_next_block(point);
                 if (point >= 100) {
@@ -787,6 +788,7 @@ void check_key(void) {
                 break;
 
 
+            case 88:    //'X'
             case 120:  //use x to lower speed
 
 
@@ -808,9 +810,15 @@ void check_key(void) {
                     choose_block(options);
                     exchange(point);
                 }
+                break;
+            case 90:    ///'Z'
+            case 122:   ///'z'
 
+                if (point >= 750) { ///should be 750;
+                    point -= 750;
+                    bomb_ready();
 
-
+                }
                 break;
 
             case SPACE: //스페이스키 눌렀을때 
@@ -822,7 +830,7 @@ void check_key(void) {
                     exchange(point);
                 }
                 break;
-            case P: //P(대문자) 눌렀을때 
+            //case P: //P(대문자) 눌렀을때 
             case p: //p(소문자) 눌렀을때 
                 pause(); //일시정지 
                 break;
@@ -850,8 +858,11 @@ void drop_block(void) {
         new_block_on = 1; //새로운 블럭생성 flag를 켬    
         return; //함수 종료 
     }
-    if (check_crush(bx, by + 1, b_rotation) == true) move_block(DOWN); //如果下面是空的，向下移動一格
-    if (check_crush(bx, by + 1, b_rotation) == false) crush_on++; //無法向下移動時打開crush flag
+    if (check_crush(bx, by + 1, b_rotation) == true) move_block(DOWN);  ///如果下一步无重叠方块，向下移動一格
+    if (check_crush(bx, by + 1, b_rotation) == false) {
+        bomb_clear();     ///满足内置条件时触发炸弹
+        crush_on++; }   ///如果下一步有重叠方块，打開crush flag        
+
 }
 
 int check_crush(int bx, int by, int b_rotation) { //檢查指定座標與旋轉值是否存在衝突
@@ -859,7 +870,7 @@ int check_crush(int bx, int by, int b_rotation) { //檢查指定座標與旋轉�
 
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) { //지정된 위치의 게임판과 블럭모양을 비교해서 겹치면 false를 리턴 
-            if (blocks[b_type][b_rotation][i][j] == 1 && main_org[by + i][bx + j] > 0) return false;
+            if (blocks[b_type][b_rotation][i][j] == 1 && main_org[by + i][bx + j] > 0)  return false;
         }
     }
     return true; //하나도 안겹치면 true리턴 
@@ -944,31 +955,31 @@ void move_block(int dir) { //블록을 이동시킴
 }
 
 void check_line(void) {
-    int i, j, k, l;
+    int i, j, k, l; 
 
-    int    block_amount; //存储一行块数的变量
-    int combo = 0; //콤보갯수 저장하는 변수 지정및 초기화 
+    int block_amount; //存储一行块数的变量
+    int combo = 0; //콤보갯수 저장하는 변수 지정및 초기화   ///连消行数
 
-    for (i = MAIN_Y - 2; i > 3;) { //i= main_y -2:从墙体的上格开始，i>3:天花板(3)下面检查
+    for (i = MAIN_Y - 2; i > 3;) { //i= main_y -2:从墙体的上格开始，i>3:天花板(3)下面检查           ///遍历列
         block_amount = 0; //블록갯수 저장 변수 초기화 
-        for (j = 1; j < MAIN_X - 1; j++) { //벽과 벽사이의 블록갯루를 셈 
-            if (main_org[i][j] > 0) block_amount++;
+        for (j = 1; j < MAIN_X - 1; j++) { //벽과 벽사이의 블록갯루를 셈                            ///遍历行，清点该行块数量
+            if (main_org[i][j] > 0) block_amount++; 
         }
-        if (block_amount == MAIN_X - 2) { //블록이 가득 찬 경우 
-            if (level_up_on == 0) { //레벨업상태가 아닌 경우에(레벨업이 되면 자동 줄삭제가 있음) 
-                point += 100 * level; //점수추가 
-                cnt++; //지운 줄 갯수 카운트 증가 
-                combo++; //콤보수 증가  
+        if (block_amount == MAIN_X - 2) { //블록이 가득 찬 경우                            ///若行满
+            if (level_up_on == 0) { //레벨업상태가 아닌 경우에(레벨업이 되면 자동 줄삭제가 있음)         ///且此次消除未升级
+                point += 100 * level; //점수추가                                                            ///加分
+                cnt++; //지운 줄 갯수 카운트 증가                                                           ///加行记录
+                combo++; //콤보수 증가                                                                      ///加combo
             }
             for (k = i; k > 1; k--) { //윗줄을 한칸씩 모두 내림(윗줄이 천장이 아닌 경우에만) 
                 for (l = 1; l < MAIN_X - 1; l++) {
-                    if (main_org[k - 1][l] != CEILLING) main_org[k][l] = main_org[k - 1][l];
+                    if (main_org[k - 1][l] != CEILLING) main_org[k][l] = main_org[k - 1][l];        ///若未顶出虚线，则覆盖已满的行，自上至下
                     if (main_org[k - 1][l] == CEILLING) main_org[k][l] = EMPTY;
                     //윗줄이 천장인 경우에는 천장을 한칸 내리면 안되니까 빈칸을 넣음 
                 }
             }
         }
-        else i--;
+        else i--; 
     }
     if (combo) { //줄 삭제가 있는 경우 점수와 레벨 목표를 새로 표시함  
         if (combo > 1) { //2콤보이상인 경우 경우 보너스및 메세지를 게임판에 띄웠다가 지움 
@@ -1154,4 +1165,54 @@ void pause(void) { //게임 일시정지 함수
             }
         }
     }
+}
+
+void draw_next_block() {
+    int i, j;
+    for (i = 1; i < 3; i++) { //在遊戲狀態顯示時繪製下一個塊      ///直接嵌入至荧屏
+        for (j = 0; j < 4; j++) {
+            if (blocks[b_type_next][0][i][j] == 1) {
+                gotoxy(STATUS_X_ADJ + 2 + j, i + 6);
+                printf("■");
+            }
+            else {
+                gotoxy(STATUS_X_ADJ + 2 + j, i + 6);
+                printf("  ");
+            }
+        }
+    }
+}
+
+void bomb_ready(void) {   ///release a BOMB to kill a line
+    printf("bomb ready"); 
+    bomb_on = true;
+    b_type_next = 7;
+    draw_next_block();
+}
+
+void bomb_clear() {       ///炸弹清行
+    int i, j;
+    int block_amount = 0; ///变量-统计方块数量
+
+
+    if (bomb_on == true && b_type == 7) {  /// 仅在炸弹状态激活时，且当前方块为炸弹时触发
+        
+
+        for (j = 0; j < MAIN_X - 2; j++) {                 ///清除炸弹所在行
+            if(main_org[by + 2][j + 1] > 0) block_amount++;     ///统计方块数量
+            main_org[by + 2][j + 1] = EMPTY;                    ///: "by+2"-补齐by计量与main_org内计量的差值，"j+1"-忽略左墙
+        }
+
+        for (i = by + 2; i > 4; i--) {                      ///将虚线以下、空白行以上的部分向下平移
+            for (j = 0; j < MAIN_X - 2; j++) 
+                main_org[i][j + 1] = main_org[i - 1][j + 1];
+        }
+        if (b_type_next != 7)bomb_on = false;
+    }
+    
+    point += block_amount * 10;             ///炸弹清行每有一个方块加10分
+
+    draw_main();
+    draw_map(); 
+    check_level_up();
 }

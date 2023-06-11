@@ -330,9 +330,11 @@ void title4() { //General Introduction
         gotoxy(x + 2, y + 10); printf("(num) Change a specific block: 500 point.");
         gotoxy(x + 2, y + 11); printf("  (z) Bomb a whole line: 750 point.");
         gotoxy(x + 2, y + 12); printf("  (x) Lower the speed to last level: 1000 point.");
-        gotoxy(x, y + 16); printf("Input Playername:");
-        keyPressed = _getch();
+        gotoxy(x, y + 16); printf("Input Playername:");      
+        scanf("%s", playername);
+        
 
+        keyPressed = _getch();
         if (keyPressed == 8) {
             title();
             break;
@@ -341,7 +343,7 @@ void title4() { //General Introduction
             selectedOption = 1;
             break; // 選擇完成，跳出迴圈
         }
-        scanf("%s", playername);
+        
         gotoxy(x + 14, y + 14); printf("□□□□□□□□□□□□"); Sleep(100);
         gotoxy(x + 14, y + 15); printf("□                    □"); Sleep(100);
         gotoxy(x + 14, y + 16); printf("□   ENTER TO START   □"); Sleep(100);
@@ -349,15 +351,23 @@ void title4() { //General Introduction
         gotoxy(x + 14, y + 18); printf("□□□□□□□□□□□□"); Sleep(100);
 
         // 讀取按鍵
-        keyPressed = _getch();
+        //keyPressed = _getch();
 
-        if (keyPressed == 8) {
-            title();
-            break;
-        }
-        else if (keyPressed == 13) { // Enter鍵  
-            game();
-            break; // 選擇完成，跳出迴圈
+        while (1) {     ///防止其他键入其他值后，上图消失
+            keyPressed = _getch();
+
+            if (keyPressed == 8) {      //Esc
+                title();
+                break;
+            }
+            else if (keyPressed == 13) {    //Enter
+                game();
+                break;
+            }
+            else {
+                // 继续等待输入
+                continue;
+            }
         }
     }
 }
@@ -764,16 +774,17 @@ void check_key(void) {
                 if (check_crush(bx - 1, by, b_rotation) == true) move_block(LEFT);
                 break;                            //왼쪽으로 갈 수 있는지 체크 후 가능하면 이동
             case RIGHT: //오른쪽 방향키 눌렀을때- 위와 동일하게 처리됨 
-                if (check_crush(bx + 1, by, b_rotation) == true) move_block(RIGHT);
+                if (check_crush(bx + 1, by, b_rotation) == true) move_block(RIGHT);               
                 break;
             case DOWN: //아래쪽 방향키 눌렀을때-위와 동일하게 처리됨 
                 if (check_crush(bx, by + 1, b_rotation) == true) move_block(DOWN);
                 break;
             case UP: //위쪽 방향키 눌렀을때 
-                if (check_crush(bx, by, (b_rotation + 1) % 4) == true) move_block(UP);
+                if (check_crush(bx, by, (b_rotation + 1) % 4) == true) move_block(UP);                
                 //회전할 수 있는지 체크 후 가능하면 회전
                 else if (crush_on == 1 && check_crush(bx, by - 1, (b_rotation + 1) % 4) == true) move_block(100);
-            }                    //바닥에 닿은 경우 위쪽으로 한칸띄워서 회전이 가능하면 그렇게 함(특수동작)
+                                        //바닥에 닿은 경우 위쪽으로 한칸띄워서 회전이 가능하면 그렇게 함(특수동작)
+            }                    
         }
         else { //방향키가 아닌경우 
             switch (key) {
@@ -788,7 +799,7 @@ void check_key(void) {
                 break;
 
 
-            case 88:    //'X'
+            case 88:    //'X'750
             case 120:  //use x to lower speed
 
 
@@ -1183,8 +1194,7 @@ void draw_next_block() {
     }
 }
 
-void bomb_ready(void) {   ///release a BOMB to kill a line
-    printf("bomb ready"); 
+void bomb_ready(void) {   ///初始化炸弹环境
     bomb_on = true;
     b_type_next = 7;
     draw_next_block();

@@ -1,3 +1,18 @@
+【更新】
 1. 增加了对【大写字母】操作的支持。在caps锁定时亦可操作暂停、炸弹等指令。
 2. 将【显示下一方块】从new_block()函数中提出，外置为单独的函数draw_next_block()，方便bomb()调用。
 3. 新增【炸弹】功能。主要由参数bomb_on, bomb_ready()和bomb_clear()组成。
+
+
+【修复BUG】
+1. 进入ENTER TO START时，按Esc, Enter外的按键图标消失，需重新输入Playername
+
+【未修复BUG】
+1. 左右移动时，不能实时更新分数
+"Every step(up, left, right) cost 1 point."
+ - 未找到相关运算
+
+2. 在输入Playername的字符前按回车，会跳过game()，直接结束程序
+ - 该处代码较为混乱，修复尝试未果
+
+3. 其他几处偶见或不影响的轻微bug，详见/BUGS/bugs_found.txt

@@ -98,7 +98,6 @@ int best_score = 0; //최고게임점수
 int worst_score = 0;
 int flag = 0;
 
-
 int new_block_on = 0; //새로운 블럭이 필요함을 알리는 flag 
 int crush_on = 0; //현재 이동중인 블록이 충돌상태인지 알려주는 flag 
 int level_up_on = 0; //다음레벨로 진행(현재 레벨목표가 완료되었음을) 알리는 flag 
@@ -106,7 +105,6 @@ int space_key_on = 0; //hard drop상태임을 알려주는 flag
 char playername[50];
 int options;
 _Bool bomb_on = false; //a flag for bomb status
-
 
 int tmp = 0;
 
@@ -176,8 +174,7 @@ int main() {
 
     srand((unsigned)time(NULL)); //生成隨機數表
     setcursortype(NOCURSOR); //大而消除
-    title(); //主標題調用            
-
+    title(); //主標題調用
 }
 
 void insertEntry(ScoreEntry array[], int index, const char* name, int score) {
@@ -193,10 +190,10 @@ void title() {
     int x = 15; //타이틀화면이 표시되는 x좌표 
     int y = 12; //타이틀화면이 표시되는 y좌표 
 
-    char options[MAX_OPTIONS][20] = {
-        "GAME START",
-        "INSTRUCTION",
-        "RANKING"
+    char options[MAX_OPTIONS][30] = {
+        "□   【GAME START】",
+        "□  【INSTRUCTION】",
+        "□    【RANKING】"
     };
 
     int selectedOption = 0;
@@ -205,23 +202,23 @@ void title() {
     while (1) {
         system("cls"); // 清除畫面
 
-        gotoxy(x + 12, y - 11); printf("T E T R I S");
-        gotoxy(x + 10, y - 8); printf("%s", "M A I N    M E N U");
-        gotoxy(x, y - 5); printf("%s", "Choose the option and press ENTER to continue...");
-        gotoxy(x, y + 0); printf(options[0]);
-        gotoxy(x, y + 4); printf(options[1]);
-        gotoxy(x, y + 8); printf(options[2]);
+        gotoxy(x + 11, y - 11); printf("- T E T R I S -");
+        gotoxy(x + 12, y - 8); printf("%s", "MAIN  MENU");
+        gotoxy(x + 3, y - 5); printf("%s", "Choose the option and press ENTER to continue...");
+        gotoxy(x + 10, y + 0); printf(options[0]);
+        gotoxy(x + 10, y + 4); printf(options[1]);
+        gotoxy(x + 10, y + 8); printf(options[2]);
         // 顯示選單
         for (int i = 0; i < MAX_OPTIONS; i++) {
             if (i == selectedOption) {
                 if (i == 0) {
-                    gotoxy(x - 3, y + 0); printf(">>");
+                    gotoxy(x + 10, y + 0); printf("■");
                 }
                 else if (i == 1) {
-                    gotoxy(x - 3, y + 4); printf(">>");
+                    gotoxy(x + 10, y + 4); printf("■");
                 }
                 else if (i == 2) {
-                    gotoxy(x - 3, y + 8); printf(">>");
+                    gotoxy(x + 10, y + 8); printf("■");
                 }
             }
         }
@@ -266,20 +263,21 @@ void title3() {
     while (1) {
         system("cls"); // 清除畫面
 
-        gotoxy(x + 9, y - 10); printf("%s", "I N S T R U C T I O N");
-        gotoxy(x - 12, y - 8); printf("%s", "← BACK");
+        gotoxy(x + 7, y - 10); printf("%s", "- I N S T R U C T I O N -");
+        gotoxy(x , y - 6); printf("%s", "【 ← BACK 】");
 
         // 顯示選單                        
         //gotoxy(x+6, y); printf("-FIRST PLAYER-");
-        gotoxy(x + 7, y - 2); printf("  ↑   : Shift -> rotate the block");
-        gotoxy(x + 7, y - 1); printf("←  → : Left / Right -> moving the block");
-        gotoxy(x + 7, y); printf("  ↓   : Soft Drop");
-        gotoxy(x + 7, y + 1); printf(" SPACE : Hard Drop");
+        gotoxy(x + 2, y - 3); printf("┌──────────────────────────────────────────────┐");
+        gotoxy(x + 2, y - 2); printf("│       ↑   : Shift -> rotate the block        │");
+        gotoxy(x + 2, y - 1); printf("│     ←   → : Left / Right -> moving the block │");
+        gotoxy(x + 2, y);     printf("│       ↓   : Soft Drop                        │");
+        gotoxy(x + 2, y + 1); printf("│     SPACE : Hard Drop                        │");
 
-        gotoxy(x + 7, y + 2); printf("   P   : Pause");
-        gotoxy(x + 7, y + 3); printf("  ESC  : Quit");
-        gotoxy(x + 5, y + 4); printf(" BackSpace : Previous page");
-
+        gotoxy(x + 2, y + 2); printf("│       P   : Pause                            │");
+        gotoxy(x + 2, y + 3); printf("│      ESC  : Quit                             │");
+        gotoxy(x + 2, y + 4); printf("│ BackSpace : Previous page                    │");
+        gotoxy(x + 2, y + 4); printf("└──────────────────────────────────────────────┘");
         //gotoxy(x+20, y); printf("-SECOND PLAYER-");
         //gotoxy(x+18, y + 2); printf("  w    : Shift");
         //gotoxy(x+18, y + 3); printf("a  d   : Left / Right");
@@ -315,24 +313,27 @@ void title4() { //General Introduction
     while (1) {
         system("cls"); // 清除畫面
 
-        gotoxy(x + 4, y - 4); printf("%s", "G E N E R A L    M O D E    R U L E");
-        gotoxy(x - 14, y - 2); printf("%s", "← BACK");
+        gotoxy(x + 4, y - 4); printf("%s", "- G E N E R A L    M O D E    R U L E -");
+        gotoxy(x - 2, y - 2); printf("%s", "【 ← BACK 】");
 
         // 顯示選單                        
-        gotoxy(x, y); printf("BONUS:");
-        gotoxy(x + 2, y + 1); printf("HARD DROP");
-        gotoxy(x + 2, y + 2); printf("COMBO");
-        gotoxy(x + 2, y + 3); printf("CHAIN ELIMINATION");
-        gotoxy(x, y + 5); printf("MINUS:");
-        gotoxy(x + 2, y + 6); printf("Every step(up, left, right) cost 1 point.");
-        gotoxy(x, y + 8); printf("EXCHANGE: press the key in ( ) to do related action");
-        gotoxy(x + 2, y + 9); printf("  (c) Pass the current block: 100 point.");
-        gotoxy(x + 2, y + 10); printf("(num) Change a specific block: 500 point.");
-        gotoxy(x + 2, y + 11); printf("  (z) Bomb a whole line: 750 point.");
-        gotoxy(x + 2, y + 12); printf("  (x) Lower the speed to last level: 1000 point.");
-        gotoxy(x, y + 16); printf("Input Playername:");      
-        scanf("%s", playername);
+
+        gotoxy(x, y);       printf("┌───────────────────────────────────────────────────────┐");
+        gotoxy(x, y + 1);           printf("│BONUS:                                                 │");
+        gotoxy(x, y + 2);   printf("│ + HARD DROP                                           │");
+        gotoxy(x, y + 3);   printf("│ + COMBO                                               │");
+        gotoxy(x, y + 4);   printf("│ + CHAIN ELIMINATION                                   │");
+        gotoxy(x, y + 5);       printf("│MINUS:                                                 │");
+        gotoxy(x, y + 6);   printf("│ - Every step(up, left, right) cost 1 point            │");
+        gotoxy(x, y + 7);       printf("│ - EXCHANGE: press the key in ( ) to do related action │");
+        gotoxy(x, y + 8);       printf("│                                                       │");
+        gotoxy(x, y + 9);  printf("│  (C) Pass the current block: 100 point.               │");
+        gotoxy(x, y + 10);  printf("│(num) Change a specific block: 500 point.              │");
+        gotoxy(x, y + 11);  printf("│  (Z) Bomb a whole line: 750 point.                    │");
+        gotoxy(x, y + 12);  printf("│  (X) Lower the speed to last level: 1000 point.       │");
+        gotoxy(x, y + 13);  printf("└───────────────────────────────────────────────────────┘");
         
+        gotoxy(x - 2, y + 15);      printf("Input Playername:");              
 
         keyPressed = _getch();
         if (keyPressed == 8) {
@@ -343,7 +344,7 @@ void title4() { //General Introduction
             selectedOption = 1;
             break; // 選擇完成，跳出迴圈
         }
-        
+        scanf("%s", playername);
         gotoxy(x + 14, y + 14); printf("□□□□□□□□□□□□"); Sleep(100);
         gotoxy(x + 14, y + 15); printf("□                    □"); Sleep(100);
         gotoxy(x + 14, y + 16); printf("□   ENTER TO START   □"); Sleep(100);
@@ -410,13 +411,13 @@ void title5() {
 
 void exchange(point) {
     if ((point >= 100) & (point <= 120)) {
-        gotoxy(STATUS_X_ADJ, 19); printf(YELLOW_COLOR "●" RESET_COLOR "   (c) Shift Next");
+        gotoxy(STATUS_X_ADJ, 19); printf(YELLOW_COLOR "●" RESET_COLOR " (C) Shift Next");
     }
     else if (point > 120) {
-        gotoxy(STATUS_X_ADJ, 19); printf(GREEN_COLOR "●" RESET_COLOR "   (c) Shift Next");
+        gotoxy(STATUS_X_ADJ, 19); printf(GREEN_COLOR "●" RESET_COLOR " (C) Shift Next");
     }
     else {
-        gotoxy(STATUS_X_ADJ, 19); printf(RED_COLOR "●" RESET_COLOR "   (c) Shift Next");
+        gotoxy(STATUS_X_ADJ, 19); printf(RED_COLOR "●" RESET_COLOR " (C) Shift Next");
     }
 
     if ((point >= 500) & (point <= 520)) {
@@ -430,23 +431,23 @@ void exchange(point) {
     }
 
     if ((point >= 750) & (point <= 770)) {
-        gotoxy(STATUS_X_ADJ, 21); printf(YELLOW_COLOR "●" RESET_COLOR "   (z) Bomb");
+        gotoxy(STATUS_X_ADJ, 21); printf(YELLOW_COLOR "●" RESET_COLOR " (Z) Bomb");
     }
     else if (point > 770) {
-        gotoxy(STATUS_X_ADJ, 21); printf(GREEN_COLOR "●" RESET_COLOR "   (z) Bomb");
+        gotoxy(STATUS_X_ADJ, 21); printf(GREEN_COLOR "●" RESET_COLOR " (Z) Bomb");
     }
     else {
-        gotoxy(STATUS_X_ADJ, 21); printf(RED_COLOR "●" RESET_COLOR "   (z) Bomb");
+        gotoxy(STATUS_X_ADJ, 21); printf(RED_COLOR "●" RESET_COLOR " (Z) Bomb");
     }
 
     if ((point >= 1000) & (point <= 1020)) {
-        gotoxy(STATUS_X_ADJ, 22); printf(YELLOW_COLOR "●" RESET_COLOR "   (x) Lower Speed");
+        gotoxy(STATUS_X_ADJ, 22); printf(YELLOW_COLOR "●" RESET_COLOR " (X) Lower Speed");
     }
     else if (point >= 1000) {
-        gotoxy(STATUS_X_ADJ, 22); printf(GREEN_COLOR "●" RESET_COLOR "   (x) Lower Speed");
+        gotoxy(STATUS_X_ADJ, 22); printf(GREEN_COLOR "●" RESET_COLOR " (X) Lower Speed");
     }
     else {
-        gotoxy(STATUS_X_ADJ, 22); printf(RED_COLOR "●" RESET_COLOR "   (x) Lower Speed");
+        gotoxy(STATUS_X_ADJ, 22); printf(RED_COLOR "●" RESET_COLOR " (X) Lower Speed");
     }
 }
 
@@ -470,8 +471,6 @@ void game(void) {
                 break;
             }
         }
-
-
 
         drop_block(); // 降低一個區塊
         check_level_up(); // 檢查升級
@@ -571,13 +570,13 @@ void draw_map(void) { //게임 상태 표시를 나타내는 함수
     //gotoxy(STATUS_X_ADJ, y + 13); printf(" BEST SCORE :");
     //gotoxy(STATUS_X_ADJ, y + 14); printf("        %6d", best_score);        
 
-    gotoxy(STATUS_X_ADJ, y + 16); printf(RED_COLOR "●" RESET_COLOR "   (c) Shift Next");
+    gotoxy(STATUS_X_ADJ, y + 16); printf(RED_COLOR "●" RESET_COLOR "   (C) Shift Next");
     gotoxy(STATUS_X_ADJ, y + 17); printf(RED_COLOR "●" RESET_COLOR " (num) Change Block");
-    gotoxy(STATUS_X_ADJ, y + 18); printf(RED_COLOR "●" RESET_COLOR "   (z) Bomb");
-    gotoxy(STATUS_X_ADJ, y + 19); printf(RED_COLOR "●" RESET_COLOR "   (x) Lower Speed");
-    //gotoxy(STATUS_X_ADJ + 10, y + 9); printf(RED_COLOR "●" RESET_COLOR " (z) Shift Next");        
-    //gotoxy(STATUS_X_ADJ + 10, y + 11); printf(RED_COLOR "●" RESET_COLOR " (x) Change Block");    
-    //gotoxy(STATUS_X_ADJ + 10, y + 13); printf(RED_COLOR "●" RESET_COLOR " (c) Bomb");    
+    gotoxy(STATUS_X_ADJ, y + 18); printf(RED_COLOR "●" RESET_COLOR "   (Z) Bomb");
+    gotoxy(STATUS_X_ADJ, y + 19); printf(RED_COLOR "●" RESET_COLOR "   (X) Lower Speed");
+    //gotoxy(STATUS_X_ADJ + 10, y + 9); printf(RED_COLOR "●" RESET_COLOR " (Z) Shift Next");        
+    //gotoxy(STATUS_X_ADJ + 10, y + 11); printf(RED_COLOR "●" RESET_COLOR " (X) Change Block");    
+    //gotoxy(STATUS_X_ADJ + 10, y + 13); printf(RED_COLOR "●" RESET_COLOR " (C) Bomb");    
     //gotoxy(STATUS_X_ADJ + 10, y + 15); printf(RED_COLOR "●" RESET_COLOR " (v) Lower Speed"); 
 
     ///以下循环用于展示待exchange的序号和图例

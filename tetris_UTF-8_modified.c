@@ -27,7 +27,6 @@
 #define P 80 //일시정지
 #define ESC 27 //게임종료
 
-
 #define false 0
 #define true 1
 
@@ -84,9 +83,7 @@ int main_cpy[MAIN_Y][MAIN_X]; //즉 maincpy는 게임판이 모니터에 표시�
 //main의 전체를 계속 모니터에 표시하지 않고(이렇게 하면 모니터가 깜빡거림) 
 //main_cpy와 배열을 비교해서 값이 달라진 곳만 모니터에 고침 
 int bx, by; //이동중인 블록의 게임판상의 x,y좌표를 저장 
-
 int key; //키보드로 입력받은 키값을 저장 
-
 int speed; //게임진행속도 
 int level; //현재 level 
 int level_goal; //다음레벨로 넘어가기 위한 목표점수 
@@ -97,7 +94,6 @@ int last_score = 0; //마지막게임점수
 int best_score = 0; //최고게임점수
 int worst_score = 0;
 int flag = 0;
-
 int new_block_on = 0; //새로운 블럭이 필요함을 알리는 flag 
 int crush_on = 0; //현재 이동중인 블록이 충돌상태인지 알려주는 flag 
 int level_up_on = 0; //다음레벨로 진행(현재 레벨목표가 완료되었음을) 알리는 flag 
@@ -395,7 +391,6 @@ void title5() {
             gotoxy(x + 17, y - 2 + i * 2); printf("score: %d", Score_3[i].score);
         }
 
-
         keyPressed = _getch();
 
         if (keyPressed == 8) {
@@ -471,14 +466,11 @@ void game(void) {
                 break;
             }
         }
-
         drop_block(); // 降低一個區塊
         check_level_up(); // 檢查升級
         check_game_over(); //遊戲結束
-
         if (new_block_on == 1) new_block(); // 新塊flag存在時生成新塊
     }
-
 }
 
 void reset(void) {
@@ -694,24 +686,17 @@ void change_next_block(point) {
         for (int i = 0; i < 4; i++) { //遊戲版bx,by在位置生成塊
             for (int j = 0; j < 4; j++) {
                 if (blocks[b_type][b_rotation][i][j] == 1)
-
                     main_org[by + i][bx + j] = EMPTY;
             }
         }
         new_block();
 
-
         point -= 100;
         gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE); printf("        %6d", point);
-
     }
-
-
 }
 
 void change_speed() {
-
-
 
     if (point >= 1000 && level >= 2) {
 
@@ -750,19 +735,13 @@ void change_speed() {
             break;
         }
 
-
         point -= 1000;
-
-
-
     }
     gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE); printf("        %6d", point);
-
 }
 
 void check_key(void) {
     key = 0; //키값 초기화  
-
 
     if (_kbhit()) { //키입력이 있는 경우  
         key = _getch(); //키값을 받음
@@ -797,15 +776,12 @@ void check_key(void) {
                 }
                 break;
 
-
             case 88:    //'X'750
             case 120:  //use x to lower speed
-
 
                 change_speed();
                 exchange(point);
                 break;
-
 
             case 49:
             case 50:
@@ -871,7 +847,7 @@ void drop_block(void) {
     if (check_crush(bx, by + 1, b_rotation) == true) move_block(DOWN);  ///如果下一步无重叠方块，向下移動一格
     if (check_crush(bx, by + 1, b_rotation) == false) {
         bomb_clear();     ///满足内置条件时触发炸弹
-        crush_on++; }   ///如果下一步有重叠方块，打開crush flag        
+        crush_on++; }   ///如果下一步有重叠方块，打開crush flag       
 
 }
 
@@ -1074,12 +1050,9 @@ void check_level_up() {
             speed = 0;
             break;
         }
-
         level_up_on = 0; //레벨업 flag꺼줌
-
         gotoxy(STATUS_X_ADJ, STATUS_Y_LEVEL); printf(" LEVEL : %5d", level); //레벨표시 
         //gotoxy(STATUS_X_ADJ, STATUS_Y_GOAL); printf(" GOAL  : %5d", 10 - cnt); // 레벨목표 표시 
-
     }
 }
 
@@ -1119,19 +1092,15 @@ void check_game_over(void) {
                     }
                 }
             }
-
             FILE* file = fopen("score.dat", "wt");
             if (file == NULL) {
                 printf("無法開啟檔案。\n");
                 return 1;
             }
-
             for (int i = 0; i < MAX_SCORES; i++) {
                 fprintf(file, "%s,%d\n", Score_3[i].name, Score_3[i].score);
             }
-
             fclose(file);
-
             Sleep(1000);
             while (_kbhit()) _getch();
             key = _getch();
@@ -1202,7 +1171,6 @@ void bomb_ready(void) {   ///初始化炸弹环境
 void bomb_clear() {       ///炸弹清行
     int i, j;
     int block_amount = 0; ///变量-统计方块数量
-
 
     if (bomb_on == true && b_type == 7) {  /// 仅在炸弹状态激活时，且当前方块为炸弹时触发
         

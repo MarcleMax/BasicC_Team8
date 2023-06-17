@@ -51,7 +51,7 @@ int STATUS_Y_SCORE; //SCORE 정보표시위치Y 좌표 저장
 int blocks[8][4][4][4] = {
 {{0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0},{0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0},
  {0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0},{0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0}},
- 
+
 {{0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0},{0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0},
 {0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0},{0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0}},
 
@@ -101,7 +101,7 @@ int space_key_on = 0; //hard drop상태임을 알려주는 flag
 char playername[50];
 int options;
 _Bool bomb_on = false; //a flag for bomb status
-
+int elim = 0;
 int tmp = 0;
 
 typedef struct {
@@ -137,7 +137,7 @@ void exchange(point);
 void draw_next_block(void);     ///draw graph for the next block
 void bomb_ready(void);                ///change the next block to a bomb
 void bomb_clear();              ///clear a line
-
+void minus();
 ScoreEntry Score_3[MAX_SCORES];
 
 void gotoxy(int x, int y) { //gotoxy함수 
@@ -171,6 +171,14 @@ int main() {
     srand((unsigned)time(NULL)); //生成隨機數表
     setcursortype(NOCURSOR); //大而消除
     title(); //主標題調用
+}
+
+void minus(void) {
+    point = point - 1;
+    if (point < 0) {
+        point = 0;
+    }
+    gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE); printf("        %6d", point); //점수 표시    
 }
 
 void insertEntry(ScoreEntry array[], int index, const char* name, int score) {
@@ -260,7 +268,7 @@ void title3() {
         system("cls"); // 清除畫面
 
         gotoxy(x + 7, y - 10); printf("%s", "- I N S T R U C T I O N -");
-        gotoxy(x , y - 6); printf("%s", "【 ← BACK 】");
+        gotoxy(x, y - 6); printf("%s", "【 ← BACK 】");
 
         // 顯示選單                        
         //gotoxy(x+6, y); printf("-FIRST PLAYER-");
@@ -273,16 +281,7 @@ void title3() {
         gotoxy(x + 2, y + 2); printf("│       P   : Pause                            │");
         gotoxy(x + 2, y + 3); printf("│      ESC  : Quit                             │");
         gotoxy(x + 2, y + 4); printf("│ BackSpace : Previous page                    │");
-        gotoxy(x + 2, y + 4); printf("└──────────────────────────────────────────────┘");
-        //gotoxy(x+20, y); printf("-SECOND PLAYER-");
-        //gotoxy(x+18, y + 2); printf("  w    : Shift");
-        //gotoxy(x+18, y + 3); printf("a  d   : Left / Right");
-        //gotoxy(x + 18, y + 4); printf("  s    : Soft Drop");
-        //gotoxy(x + 18, y + 5); printf(" t  : Hard Drop");
-
-        //gotoxy(x + 9, y + 8); printf("   P    : Pause");
-        //gotoxy(x + 9, y + 9); printf("  ESC   : Quit");
-        //gotoxy(x + 7, y + 10); printf("  BackSpace : Previous page");
+        gotoxy(x + 2, y + 4); printf("└──────────────────────────────────────────────┘");        
         // 讀取按鍵
         keyPressed = _getch();
 
@@ -328,8 +327,8 @@ void title4() { //General Introduction
         gotoxy(x, y + 11);  printf("│  (Z) Bomb a whole line: 750 point.                    │");
         gotoxy(x, y + 12);  printf("│  (X) Lower the speed to last level: 1000 point.       │");
         gotoxy(x, y + 13);  printf("└───────────────────────────────────────────────────────┘");
-        
-        gotoxy(x - 2, y + 15);      printf("Input Playername:");              
+
+        gotoxy(x - 2, y + 15);      printf("Input Playername:");
 
         keyPressed = _getch();
         if (keyPressed == 8) {
@@ -406,43 +405,43 @@ void title5() {
 
 void exchange(point) {
     if ((point >= 100) & (point <= 120)) {
-        gotoxy(STATUS_X_ADJ, 19); printf(YELLOW_COLOR "●" RESET_COLOR " (C) Shift Next");
+        gotoxy(STATUS_X_ADJ, 19); printf(YELLOW_COLOR "●" RESET_COLOR " (C) Shift Next     ");
     }
     else if (point > 120) {
-        gotoxy(STATUS_X_ADJ, 19); printf(GREEN_COLOR "●" RESET_COLOR " (C) Shift Next");
+        gotoxy(STATUS_X_ADJ, 19); printf(GREEN_COLOR "●" RESET_COLOR " (C) Shift Next     ");
     }
     else {
-        gotoxy(STATUS_X_ADJ, 19); printf(RED_COLOR "●" RESET_COLOR " (C) Shift Next");
+        gotoxy(STATUS_X_ADJ, 19); printf(RED_COLOR "●" RESET_COLOR " (C) Shift Next     ");
     }
 
     if ((point >= 500) & (point <= 520)) {
-        gotoxy(STATUS_X_ADJ, 20); printf(YELLOW_COLOR "●" RESET_COLOR " (num) Change Block");
+        gotoxy(STATUS_X_ADJ, 20); printf(YELLOW_COLOR "●" RESET_COLOR " (num) Change Block     ");
     }
     else if (point > 520) {
-        gotoxy(STATUS_X_ADJ, 20); printf(GREEN_COLOR "●" RESET_COLOR " (num) Change Block");
+        gotoxy(STATUS_X_ADJ, 20); printf(GREEN_COLOR "●" RESET_COLOR " (num) Change Block     ");
     }
     else {
-        gotoxy(STATUS_X_ADJ, 20); printf(RED_COLOR "●" RESET_COLOR " (num) Change Block");
+        gotoxy(STATUS_X_ADJ, 20); printf(RED_COLOR "●" RESET_COLOR " (num) Change Block     ");
     }
 
     if ((point >= 750) & (point <= 770)) {
-        gotoxy(STATUS_X_ADJ, 21); printf(YELLOW_COLOR "●" RESET_COLOR " (Z) Bomb");
+        gotoxy(STATUS_X_ADJ, 21); printf(YELLOW_COLOR "●" RESET_COLOR " (Z) Bomb     ");
     }
     else if (point > 770) {
-        gotoxy(STATUS_X_ADJ, 21); printf(GREEN_COLOR "●" RESET_COLOR " (Z) Bomb");
+        gotoxy(STATUS_X_ADJ, 21); printf(GREEN_COLOR "●" RESET_COLOR " (Z) Bomb     ");
     }
     else {
-        gotoxy(STATUS_X_ADJ, 21); printf(RED_COLOR "●" RESET_COLOR " (Z) Bomb");
+        gotoxy(STATUS_X_ADJ, 21); printf(RED_COLOR "●" RESET_COLOR " (Z) Bomb     ");
     }
 
     if ((point >= 1000) & (point <= 1020)) {
-        gotoxy(STATUS_X_ADJ, 22); printf(YELLOW_COLOR "●" RESET_COLOR " (X) Lower Speed");
+        gotoxy(STATUS_X_ADJ, 22); printf(YELLOW_COLOR "●" RESET_COLOR " (X) Lower Speed     ");
     }
     else if (point >= 1000) {
-        gotoxy(STATUS_X_ADJ, 22); printf(GREEN_COLOR "●" RESET_COLOR " (X) Lower Speed");
+        gotoxy(STATUS_X_ADJ, 22); printf(GREEN_COLOR "●" RESET_COLOR " (X) Lower Speed     ");
     }
     else {
-        gotoxy(STATUS_X_ADJ, 22); printf(RED_COLOR "●" RESET_COLOR " (X) Lower Speed");
+        gotoxy(STATUS_X_ADJ, 22); printf(RED_COLOR "●" RESET_COLOR " (X) Lower Speed     ");
     }
 }
 
@@ -546,6 +545,7 @@ void reset_main_cpy(void) { //main_cpy를 초기화
 
 void draw_map(void) { //게임 상태 표시를 나타내는 함수  
     int y = 3;             // level, goal, score만 게임중에 값이 바뀔수 도 있음 그 y값을 따로 저장해둠 
+    exchange(point);
     // 그래서 혹시 게임 상태 표시 위치가 바뀌어도 그 함수에서 안바꿔도 되게.. 
     gotoxy(STATUS_X_ADJ, STATUS_Y_LEVEL = y); printf(" LEVEL : %5d", level);
     //gotoxy(STATUS_X_ADJ, STATUS_Y_GOAL = y + 1); printf(" GOAL  : %5d", 10 - cnt);
@@ -556,21 +556,11 @@ void draw_map(void) { //게임 상태 표시를 나타내는 함수
     gotoxy(STATUS_X_ADJ, y + 6); printf("|             | ");
     gotoxy(STATUS_X_ADJ, y + 7); printf("+-- -  -  - --+ ");
     gotoxy(STATUS_X_ADJ, y + 9); printf(" YOUR POINT :");
-    gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE = y + 10); printf("        %6d", point);
-    //gotoxy(STATUS_X_ADJ, y + 11); printf(" LAST SCORE :");
-    //gotoxy(STATUS_X_ADJ, y + 12); printf("        %6d", last_score);
-    //gotoxy(STATUS_X_ADJ, y + 13); printf(" BEST SCORE :");
-    //gotoxy(STATUS_X_ADJ, y + 14); printf("        %6d", best_score);        
-
+    gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE = y + 10); printf("        %6d", point);    
     gotoxy(STATUS_X_ADJ, y + 16); printf(RED_COLOR "●" RESET_COLOR "   (C) Shift Next");
     gotoxy(STATUS_X_ADJ, y + 17); printf(RED_COLOR "●" RESET_COLOR " (num) Change Block");
     gotoxy(STATUS_X_ADJ, y + 18); printf(RED_COLOR "●" RESET_COLOR "   (Z) Bomb");
-    gotoxy(STATUS_X_ADJ, y + 19); printf(RED_COLOR "●" RESET_COLOR "   (X) Lower Speed");
-    //gotoxy(STATUS_X_ADJ + 10, y + 9); printf(RED_COLOR "●" RESET_COLOR " (Z) Shift Next");        
-    //gotoxy(STATUS_X_ADJ + 10, y + 11); printf(RED_COLOR "●" RESET_COLOR " (X) Change Block");    
-    //gotoxy(STATUS_X_ADJ + 10, y + 13); printf(RED_COLOR "●" RESET_COLOR " (C) Bomb");    
-    //gotoxy(STATUS_X_ADJ + 10, y + 15); printf(RED_COLOR "●" RESET_COLOR " (v) Lower Speed"); 
-
+    gotoxy(STATUS_X_ADJ, y + 19); printf(RED_COLOR "●" RESET_COLOR "   (X) Lower Speed");    
     ///以下循环用于展示待exchange的序号和图例
     for (int t = 0; t < 7; t++) {
         for (int i = 1; i < 3; i++) { //在遊戲狀態顯示時繪製下一個塊 
@@ -587,6 +577,7 @@ void draw_map(void) { //게임 상태 표시를 나타내는 함수
 }
 
 void draw_main(void) { //게임판 그리는 함수 
+    exchange(point);
     int i, j;
 
     for (j = 1; j < MAIN_X - 1; j++) { //천장은 계속 새로운블럭이 지나가서 지워지면 새로 그려줌 
@@ -749,20 +740,24 @@ void check_key(void) {
             do { key = _getch(); } while (key == 224);//방향키지시값을 버림 
             switch (key) {
             case LEFT: //왼쪽키 눌렀을때  
+                minus();
                 if (check_crush(bx - 1, by, b_rotation) == true) move_block(LEFT);
                 break;                            //왼쪽으로 갈 수 있는지 체크 후 가능하면 이동
             case RIGHT: //오른쪽 방향키 눌렀을때- 위와 동일하게 처리됨 
-                if (check_crush(bx + 1, by, b_rotation) == true) move_block(RIGHT);               
+                minus();
+                if (check_crush(bx + 1, by, b_rotation) == true) move_block(RIGHT);
                 break;
             case DOWN: //아래쪽 방향키 눌렀을때-위와 동일하게 처리됨 
                 if (check_crush(bx, by + 1, b_rotation) == true) move_block(DOWN);
+                exchange(point);
                 break;
             case UP: //위쪽 방향키 눌렀을때 
-                if (check_crush(bx, by, (b_rotation + 1) % 4) == true) move_block(UP);                
+                minus();
+                if (check_crush(bx, by, (b_rotation + 1) % 4) == true) move_block(UP);
                 //회전할 수 있는지 체크 후 가능하면 회전
                 else if (crush_on == 1 && check_crush(bx, by - 1, (b_rotation + 1) % 4) == true) move_block(100);
-                                        //바닥에 닿은 경우 위쪽으로 한칸띄워서 회전이 가능하면 그렇게 함(특수동작)
-            }                    
+                //바닥에 닿은 경우 위쪽으로 한칸띄워서 회전이 가능하면 그렇게 함(특수동작)
+            }
         }
         else { //방향키가 아닌경우 
             switch (key) {
@@ -816,7 +811,7 @@ void check_key(void) {
                     exchange(point);
                 }
                 break;
-            //case P: //P(대문자) 눌렀을때 
+                //case P: //P(대문자) 눌렀을때 
             case p: //p(소문자) 눌렀을때 
                 pause(); //일시정지 
                 break;
@@ -847,7 +842,8 @@ void drop_block(void) {
     if (check_crush(bx, by + 1, b_rotation) == true) move_block(DOWN);  ///如果下一步无重叠方块，向下移動一格
     if (check_crush(bx, by + 1, b_rotation) == false) {
         bomb_clear();     ///满足内置条件时触发炸弹
-        crush_on++; }   ///如果下一步有重叠方块，打開crush flag       
+        crush_on++;
+    }   ///如果下一步有重叠方块，打開crush flag       
 
 }
 
@@ -941,21 +937,27 @@ void move_block(int dir) { //블록을 이동시킴
 }
 
 void check_line(void) {
-    int i, j, k, l; 
+    int i, j, k, l;
 
     int block_amount; //存储一行块数的变量
-    int combo = 0; //콤보갯수 저장하는 변수 지정및 초기화   ///连消行数
+    int combo = 0; //콤보갯수 저장하는 변수 지정및 초기화   ///连消行数        
+    int eflag = 0;
+    int cflag = 1; ///若行满
 
     for (i = MAIN_Y - 2; i > 3;) { //i= main_y -2:从墙体的上格开始，i>3:天花板(3)下面检查           ///遍历列
         block_amount = 0; //블록갯수 저장 변수 초기화 
         for (j = 1; j < MAIN_X - 1; j++) { //벽과 벽사이의 블록갯루를 셈                            ///遍历行，清点该行块数量
-            if (main_org[i][j] > 0) block_amount++; 
+            if (main_org[i][j] > 0) block_amount++;
         }
-        if (block_amount == MAIN_X - 2) { //블록이 가득 찬 경우                            ///若行满
+        if (block_amount == MAIN_X - 2) { //블록이 가득 찬 경우            
             if (level_up_on == 0) { //레벨업상태가 아닌 경우에(레벨업이 되면 자동 줄삭제가 있음)         ///且此次消除未升级
                 point += 100 * level; //점수추가                                                            ///加分
                 cnt++; //지운 줄 갯수 카운트 증가                                                           ///加行记录
-                combo++; //콤보수 증가                                                                      ///加combo
+                combo++; //콤보수 증가 
+                if (cflag == 1) {
+                    elim++;
+                    cflag = 0;
+                }
             }
             for (k = i; k > 1; k--) { //윗줄을 한칸씩 모두 내림(윗줄이 천장이 아닌 경우에만) 
                 for (l = 1; l < MAIN_X - 1; l++) {
@@ -965,13 +967,31 @@ void check_line(void) {
                 }
             }
         }
-        else i--; 
+        else i--;
+    }   
+    if (combo==0) {
+        elim = 0;
     }
+
+    if (elim) {
+        if (elim > 1) {
+            eflag = 1;
+            gotoxy(MAIN_X_ADJ + 3, MAIN_Y_ADJ + by - 2); printf("%d CHAIN-E", elim);
+            Sleep(500);
+            point += (combo * level * 100) * (1+(elim*0.25));
+            reset_main_cpy();
+        }
+        gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE); printf("        %6d", point);
+        exchange(point);
+    }
+
     if (combo) { //줄 삭제가 있는 경우 점수와 레벨 목표를 새로 표시함  
         if (combo > 1) { //2콤보이상인 경우 경우 보너스및 메세지를 게임판에 띄웠다가 지움 
             gotoxy(MAIN_X_ADJ + (MAIN_X / 2) - 1, MAIN_Y_ADJ + by - 2); printf("%d COMBO!", combo);
             Sleep(500);
-            point += (combo * level * 100);
+            if (eflag == 0) {
+                point += (combo * level * 100);
+            }            
             reset_main_cpy(); //텍스트를 지우기 위해 main_cpy을 초기화.
             //(main_cpy와 main_org가 전부 다르므로 다음번 draw()호출시 게임판 전체를 새로 그리게 됨) 
         }
@@ -1015,8 +1035,7 @@ void check_level_up() {
             }
         }
         Sleep(100); //별찍은거 보여주기 위해 delay 
-        check_line(); //블록으로 모두 채운것 지우기
-        //.check_line()함수 내부에서 level up flag가 켜져있는 경우 점수는 없음.   
+        check_line(); //블록으로 모두 채운것 지우기        
         int  changed_level = level - tmp;
         switch (changed_level) {
         case 1:
@@ -1062,8 +1081,8 @@ void check_game_over(void) {
     int x = 20;
     int y = 10;
 
-    for (i = 1; i < MAIN_X - 2; i++) {
-        if (main_org[3][i] > 0) { //천장(위에서 세번째 줄)에 inactive가 생성되면 게임 오버 
+    for (i = 1; i < MAIN_X - 2; i++) {        
+        if ((main_org[3][i] > 0) || (point==0)) { //천장(위에서 세번째 줄)에 inactive가 생성되면 게임 오버 
             score = level * 10000 + point;
             gotoxy(x, y + 0); printf(YELLOW_COLOR"#################################"RESET_COLOR); //게임오버 메세지 
             gotoxy(x, y + 1); printf(YELLOW_COLOR"##                             ##"RESET_COLOR);
@@ -1104,7 +1123,12 @@ void check_game_over(void) {
             Sleep(1000);
             while (_kbhit()) _getch();
             key = _getch();
-            reset();
+            if (key == ESC) {
+                title();
+            }
+            else {
+                reset();
+            }
         }
     }
 }
@@ -1171,25 +1195,22 @@ void bomb_ready(void) {   ///初始化炸弹环境
 void bomb_clear() {       ///炸弹清行
     int i, j;
     int block_amount = 0; ///变量-统计方块数量
-
     if (bomb_on == true && b_type == 7) {  /// 仅在炸弹状态激活时，且当前方块为炸弹时触发
-        
-
         for (j = 0; j < MAIN_X - 2; j++) {                 ///清除炸弹所在行
-            if(main_org[by + 2][j + 1] > 0) block_amount++;     ///统计方块数量
+            if (main_org[by + 2][j + 1] > 0) block_amount++;     ///统计方块数量
             main_org[by + 2][j + 1] = EMPTY;                    ///: "by+2"-补齐by计量与main_org内计量的差值，"j+1"-忽略左墙
         }
 
         for (i = by + 2; i > 4; i--) {                      ///将虚线以下、空白行以上的部分向下平移
-            for (j = 0; j < MAIN_X - 2; j++) 
+            for (j = 0; j < MAIN_X - 2; j++)
                 main_org[i][j + 1] = main_org[i - 1][j + 1];
         }
         if (b_type_next != 7)bomb_on = false;
     }
-    
+
     point += block_amount * 10;             ///炸弹清行每有一个方块加10分
 
     draw_main();
-    draw_map(); 
+    draw_map();
     check_level_up();
 }
